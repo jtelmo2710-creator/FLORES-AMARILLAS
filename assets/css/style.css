@@ -1,0 +1,301 @@
+/* ==========================================================
+   Tarjeta virtual: ramo de girasoles
+   Toda la escena se mide en "u" (1u = 1% del lado limitante),
+   así el ramo conserva sus proporciones en celular y en escritorio.
+   ========================================================== */
+
+:root {
+  --u: min(1vh, 1.7vw);
+
+  --azul-noche: #182a66;
+  --azul-cielo: #4a78d2;
+  --crema: #fff3cf;
+  --sombra-flor: rgba(10, 18, 50, .38);
+}
+
+@supports (height: 1dvh) {
+  :root { --u: min(1dvh, 1.7vw); }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 100vh;   /* alto "grande" como respaldo para navegadores sin dvh */
+  margin: 0;
+  overflow: hidden;
+  background: var(--azul-noche);
+  font-family: "Caveat", "Segoe Script", "Bradley Hand", cursive;
+  color: var(--crema);
+}
+
+/* En celular, la barra de direcciones cambia el alto visible; dvh sigue
+   ese alto real. Si el contenedor usara 100% (relativo al alto "grande"),
+   el ramo quedaría más alto que la pantalla y su mitad inferior no se
+   vería, ya que el overflow está oculto y no hay scroll posible. */
+@supports (height: 100dvh) {
+  body { height: 100dvh; }
+}
+
+/* ---------- Escenario ---------- */
+.card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 60% 55% at 50% 58%, rgba(255, 214, 90, .22), transparent 70%),
+    radial-gradient(ellipse 120% 100% at 50% 40%, var(--azul-cielo) 0%, #2c4b9e 45%, var(--azul-noche) 100%);
+}
+
+/* ---------- Mensaje ---------- */
+.message {
+  position: absolute;
+  top: calc(var(--u) * 2.5);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  padding: 0 4vw;
+  text-align: center;
+  pointer-events: none;
+  animation: aparecer 1.6s ease-out var(--msg-delay, 7s) both;
+}
+
+.message h1 {
+  margin: 0;
+  font-size: calc(var(--u) * 7);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: .01em;
+  text-shadow: 0 calc(var(--u) * .3) calc(var(--u) * 1.4) rgba(8, 14, 44, .45);
+}
+
+.message p {
+  margin: calc(var(--u) * .6) 0 0;
+  font-size: calc(var(--u) * 3.6);
+  font-weight: 500;
+  line-height: 1.1;
+  opacity: .92;
+  text-shadow: 0 calc(var(--u) * .2) calc(var(--u) * 1) rgba(8, 14, 44, .5);
+}
+
+/* ---------- Ramo ---------- */
+.bouquet {
+  position: absolute;
+  inset: 0;
+}
+
+/* Cada tallo gira desde su base (abajo al centro) */
+.stem {
+  position: absolute;
+  bottom: calc(var(--u) * -4);
+  left: 50%;
+  height: calc(var(--u) * var(--h));
+  width: calc(var(--u) * var(--h) * 0.6667);
+  margin-left: calc(var(--u) * var(--h) * -0.3467);   /* la base del tallo está al 52% del ancho */
+  transform-origin: 52% 100%;
+  transform: rotate(var(--a));
+  animation: mecer var(--sway-dur, 6s) ease-in-out var(--sway-delay, 9s) infinite alternate both;
+}
+
+.stem__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: 52% 50%;
+  transform: scaleX(var(--flip, 1));
+  filter: drop-shadow(0 calc(var(--u) * .4) calc(var(--u) * .8) rgba(8, 14, 44, .35));
+  /* El tallo "sale" de abajo hacia arriba */
+  animation: crecer var(--grow-dur, 2.2s) cubic-bezier(.3, .65, .25, 1) var(--grow-delay, 0s) both;
+}
+
+.flower {
+  position: absolute;
+  top: 8%;
+  left: var(--tip-x);
+  width: calc(var(--u) * var(--fs));
+  height: auto;
+  transform: translate(-50%, -50%) rotate(var(--fr)) scale(1);
+  filter: drop-shadow(0 calc(var(--u) * .6) calc(var(--u) * 1.1) var(--sombra-flor));
+  animation: florecer 1.3s cubic-bezier(.2, .8, .3, 1) var(--bloom-delay, 4s) both;
+}
+
+/* Corbata que sujeta el ramo */
+.ribbon {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--u) * -5);
+  width: calc(var(--u) * 28);
+  height: auto;
+  margin-left: calc(var(--u) * -14);
+  z-index: 40;
+  filter: drop-shadow(0 calc(var(--u) * .4) calc(var(--u) * .7) rgba(8, 14, 44, .4));
+  transform-origin: 50% 50%;
+  animation: anudar .9s cubic-bezier(.2, .9, .3, 1.2) var(--ribbon-delay, 8s) both;
+}
+
+/* ---------- Botón ---------- */
+.replay {
+  position: absolute;
+  right: max(2.5vw, 14px);
+  bottom: max(2.5vh, 14px);
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  color: var(--azul-noche);
+  background: var(--crema);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity .6s ease, transform .6s ease, background-color .2s ease;
+}
+
+.replay.is-ready {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+.replay:hover { background: #ffe58a; }
+
+.replay:focus-visible {
+  outline: 3px solid #ffe58a;
+  outline-offset: 3px;
+}
+
+/* ---------- Botón de sonido ---------- */
+.sound {
+  position: absolute;
+  left: max(2.5vw, 14px);
+  bottom: max(2.5vh, 14px);
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  color: var(--azul-noche);
+  background: var(--crema);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .6s ease, background-color .2s ease;
+}
+
+.sound.is-visible { opacity: 1; pointer-events: auto; }
+.sound:hover { background: #ffe58a; }
+.sound:focus-visible { outline: 3px solid #ffe58a; outline-offset: 3px; }
+
+.sound__off { display: none; }
+.sound.is-off .sound__on { display: none; }
+.sound.is-off .sound__off { display: block; }
+
+/* ---------- Pantalla de inicio ---------- */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 1.6);
+  padding: 0;
+  color: var(--crema);
+  font-family: inherit;
+  border: 0;
+  cursor: pointer;
+  background:
+    radial-gradient(ellipse 60% 55% at 50% 50%, rgba(255, 214, 90, .22), transparent 70%),
+    radial-gradient(ellipse 120% 100% at 50% 40%, var(--azul-cielo) 0%, #2c4b9e 45%, var(--azul-noche) 100%);
+  transition: opacity .9s ease, visibility 0s linear .9s;
+}
+
+.intro.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.intro__flor {
+  width: calc(var(--u) * 26);
+  height: auto;
+  filter: drop-shadow(0 calc(var(--u) * .8) calc(var(--u) * 1.4) var(--sombra-flor));
+  animation: girar 40s linear infinite, latir 2.8s ease-in-out infinite;
+}
+
+.intro__texto {
+  font-size: calc(var(--u) * 5);
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 calc(var(--u) * .3) calc(var(--u) * 1.2) rgba(8, 14, 44, .45);
+}
+
+.intro__pista {
+  font-size: calc(var(--u) * 3);
+  font-weight: 500;
+  opacity: .75;
+  margin-top: calc(var(--u) * -1);
+}
+
+.intro:focus-visible { outline: 3px solid #ffe58a; outline-offset: -10px; }
+
+/* ---------- Animaciones ---------- */
+@keyframes girar { to { rotate: 360deg; } }
+
+@keyframes latir {
+  0%, 100% { scale: 1; }
+  50%      { scale: 1.05; }
+}
+
+@keyframes crecer {
+  from { clip-path: inset(100% 0 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes florecer {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(calc(var(--fr) - 110deg)) scale(0);
+  }
+  35% { opacity: 1; }
+  78% {
+    transform: translate(-50%, -50%) rotate(calc(var(--fr) + 4deg)) scale(1.09);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--fr)) scale(1);
+  }
+}
+
+@keyframes anudar {
+  from { opacity: 0; transform: scale(.3); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes mecer {
+  from { rotate: -.7deg; }
+  to   { rotate: .7deg; }
+}
+
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(calc(var(--u) * -1)); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Quien prefiere menos movimiento ve la tarjeta ya terminada */
+@media (prefers-reduced-motion: reduce) {
+  .stem, .stem__img, .flower, .ribbon, .message, .intro__flor { animation: none; }
+  .replay { transition: none; }
+}
